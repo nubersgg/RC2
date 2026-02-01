@@ -1,25 +1,28 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <meta charset="UTF-8">
-  <title>RC2 Logic Simulator</title>
-  <link rel="stylesheet" href="style.css">
+<meta charset="UTF-8">
+<title>RC2 Logic Simulator</title>
+<link rel="stylesheet" href="style.css">
 </head>
 <body>
 
-<div id="sidebar">
-  <button onclick="spawnGate('AND')">AND</button>
-  <button onclick="spawnGate('OR')">OR</button>
-  <button onclick="spawnGate('NOT')">NOT</button>
-  <button onclick="spawnGate('XOR')">XOR</button>
-  <hr>
-  <button onclick="spawnGate('DELAY')">DELAY</button>
-  <button onclick="spawnGate('TOGGLE')">TOGGLE</button>
-  <button onclick="spawnGate('LATCH')">LATCH</button>
-  <button onclick="spawnGate('BLINK')">BLINK</button>
-  <button onclick="spawnGate('REPEAT')">REPEAT</button>
+<!-- Top gate bar -->
+<div id="topbar">
+  <div id="gateButtons">
+    <button onclick="spawnGate('AND')">AND</button>
+    <button onclick="spawnGate('OR')">OR</button>
+    <button onclick="spawnGate('NOT')">NOT</button>
+    <button onclick="spawnGate('XOR')">XOR</button>
+    <button onclick="spawnGate('DELAY')">DELAY</button>
+    <button onclick="spawnGate('TOGGLE')">TOGGLE</button>
+    <button onclick="spawnGate('LATCH')">LATCH</button>
+    <button onclick="spawnGate('BLINK')">BLINK</button>
+    <button onclick="spawnGate('REPEAT')">REPEAT</button>
+  </div>
 </div>
 
+<!-- Main canvas -->
 <svg id="canvas"></svg>
 
 <script src="sim.js"></script>
