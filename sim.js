@@ -3,7 +3,7 @@ let gates = [];
 let wires = [];
 let draggingGate = null;
 let offset = {x:0,y:0};
-let cableStart = null;
+let draggingWire = null;
 
 // Spawn a gate on canvas
 function spawnGate(type) {
@@ -13,7 +13,7 @@ function spawnGate(type) {
   gates.push(gate);
 }
 
-// Create a gate
+// Create a gate with input/output ports
 function createGate(x, y, type) {
   const g = document.createElementNS(svg.namespaceURI,"g");
   g.setAttribute("transform",`translate(${x},${y})`);
@@ -23,12 +23,14 @@ function createGate(x, y, type) {
   body.setAttribute("height",40);
   body.setAttribute("class","gate");
 
+  // input circle
   const input = document.createElementNS(svg.namespaceURI,"circle");
   input.setAttribute("cx",0);
   input.setAttribute("cy",20);
   input.setAttribute("r",6);
   input.setAttribute("class","port input off");
 
+  // output square
   const output = document.createElementNS(svg.namespaceURI,"rect");
   output.setAttribute("x",74);
   output.setAttribute("y",14);
@@ -41,7 +43,7 @@ function createGate(x, y, type) {
   g.appendChild(output);
   svg.appendChild(g);
 
-  // Drag logic
+  // Drag gate
   g.addEventListener("mousedown",(e)=>{
     if(e.target.classList.contains("port")) return; // ignore ports
     draggingGate = g;
@@ -49,31 +51,57 @@ function createGate(x, y, type) {
     offset.y = e.offsetY;
   });
 
-  return { g, input, output, type };
-}
-
-// Canvas mouse move for dragging gates or cables
-svg.addEventListener("mousemove",(e)=>{
-  if(draggingGate){
+  // Start wire from output
+  output.addEventListener("mousedown",(e)=>{
+    e.stopPropagation();
     const pt = svg.createSVGPoint();
     pt.x = e.clientX;
     pt.y = e.clientY;
-    const svgPt = pt.matrixTransform(svg.getScreenCTM().inverse());
+    const p = pt.matrixTransform(svg.getScreenCTM().inverse());
+    draggingWire = document.createElementNS(svg.namespaceURI,"line");
+    draggingWire.setAttribute("x1",p.x);
+    draggingWire.setAttribute("y1",p.y);
+    draggingWire.setAttribute("x2",p.x);
+    draggingWire.setAttribute("y2",p.y);
+    draggingWire.setAttribute("class","wire off");
+    svg.appendChild(draggingWire);
+  });
+
+  return { g, input, output, type, x, y };
+}
+
+// Mouse move: drag gate or wire
+svg.addEventListener("mousemove",(e)=>{
+  const pt = svg.createSVGPoint();
+  pt.x = e.clientX;
+  pt.y = e.clientY;
+  const svgPt = pt.matrixTransform(svg.getScreenCTM().inverse());
+
+  if(draggingGate){
     draggingGate.setAttribute("transform",`translate(${svgPt.x-offset.x},${svgPt.y-offset.y})`);
   }
-  if(cableStart){
-    cableStart.setAttribute("x2", e.clientX);
-    cableStart.setAttribute("y2", e.clientY);
+  if(draggingWire){
+    draggingWire.setAttribute("x2",svgPt.x);
+    draggingWire.setAttribute("y2",svgPt.y);
   }
 });
 
-svg.addEventListener("mouseup",()=>{ draggingGate=null; });
-
-// Example blinking gate
-const blinkGate = createGate(600,150,'BLINK');
-let blinkState=false;
-setInterval(()=>{
-  blinkState=!blinkState;
-  blinkGate.output.classList.toggle("on",blinkState);
-  blinkGate.output.classList.toggle("off",!blinkState);
-},1000);
+// Mouse up: stop dragging
+svg.addEventListener("mouseup",(e)=>{
+  draggingGate = null;
+  if(draggingWire){
+    // Check if we ended on an input port
+    const target = document.elementFromPoint(e.clientX,e.clientY);
+    if(target && target.classList.contains("input")){
+      // snap wire end to port
+      const bbox = target.getBBox();
+      draggingWire.setAttribute("x2",bbox.x+bbox.width/2);
+      draggingWire.setAttribute("y2",bbox.y+bbox.height/2);
+      wires.push(draggingWire);
+    } else {
+      // cancel wire
+      svg.removeChild(draggingWire);
+    }
+    draggingWire = null;
+  }
+});
