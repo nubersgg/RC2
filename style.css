@@ -1,0 +1,21 @@
+body {
+  margin: 0;
+  background: #222;
+}
+
+.port.off { fill: black; }
+.port.on  { fill: #2da8ff; }
+
+.wire.off { stroke: black; }
+.wire.on  { stroke: #2da8ff; }
+
+.wire {
+  stroke-width: 3;
+  fill: none;
+}
+
+.gate {
+  fill: #444;
+  stroke: #888;
+  stroke-width: 2;
+}
