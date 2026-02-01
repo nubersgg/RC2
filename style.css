@@ -1,21 +1,32 @@
 body {
   margin: 0;
+  display: flex;
   background: #222;
+  color: white;
+  font-family: sans-serif;
 }
 
-.port.off { fill: black; }
-.port.on  { fill: #2da8ff; }
-
-.wire.off { stroke: black; }
-.wire.on  { stroke: #2da8ff; }
-
-.wire {
-  stroke-width: 3;
-  fill: none;
+#sidebar {
+  width: 160px;
+  background: #111;
+  padding: 8px;
+  border-right: 2px solid #333;
 }
 
-.gate {
-  fill: #444;
-  stroke: #888;
-  stroke-width: 2;
+#sidebar button {
+  width: 100%;
+  margin-bottom: 4px;
+  background: #333;
+  color: white;
+  border: none;
+  padding: 6px;
+  cursor: pointer;
+}
+
+#sidebar button:hover {
+  background: #555;
+}
+
+#canvas {
+  flex: 1;
 }
