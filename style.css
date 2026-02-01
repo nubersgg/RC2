@@ -46,3 +46,5 @@ body {
 .wire.on { stroke: #2da8ff; }
 .wire { stroke-width: 3; fill: none; }
 .gate { fill: #444; stroke: #888; stroke-width: 2; cursor: grab; }
+.gateText { fill: white; font-size: 12px; pointer-events: none; }
+.modeText { fill: yellow; font-size: 12px; pointer-events: none; }
