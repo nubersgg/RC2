@@ -39,6 +39,7 @@ body {
   height: calc(100vh - 50px);
   display: block;
 }
+
 .port.off { fill: black; }
 .port.on { fill: #2da8ff; }
 .wire.off { stroke: black; }
