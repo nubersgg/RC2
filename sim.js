@@ -1,8 +1,12 @@
 const svg = document.getElementById("canvas");
 
-// create gate
+function spawnGate(type) {
+  const gate = createGate(200, 100 + Math.random() * 200);
+  gate.type = type;
+}
+
 function createGate(x, y) {
-  const g = document.createElementNS("http://www.w3.org/2000/svg", "g");
+  const g = document.createElementNS(svg.namespaceURI, "g");
   g.setAttribute("transform", `translate(${x},${y})`);
 
   const body = document.createElementNS(svg.namespaceURI, "rect");
@@ -10,14 +14,12 @@ function createGate(x, y) {
   body.setAttribute("height", 40);
   body.setAttribute("class", "gate");
 
-  // input (circle)
   const input = document.createElementNS(svg.namespaceURI, "circle");
   input.setAttribute("cx", 0);
   input.setAttribute("cy", 20);
   input.setAttribute("r", 6);
   input.setAttribute("class", "port input off");
 
-  // output (square)
   const output = document.createElementNS(svg.namespaceURI, "rect");
   output.setAttribute("x", 74);
   output.setAttribute("y", 14);
@@ -30,14 +32,5 @@ function createGate(x, y) {
   g.appendChild(output);
   svg.appendChild(g);
 
-  return { input, output, state: false };
+  return { g, input, output };
 }
-
-// example toggle signal
-const gate = createGate(100, 100);
-
-setInterval(() => {
-  gate.state = !gate.state;
-  gate.output.classList.toggle("on", gate.state);
-  gate.output.classList.toggle("off", !gate.state);
-}, 1000);
