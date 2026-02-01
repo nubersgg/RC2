@@ -7,7 +7,20 @@
 </head>
 <body>
 
-<svg id="canvas" width="100%" height="100%"></svg>
+<div id="sidebar">
+  <button onclick="spawnGate('AND')">AND</button>
+  <button onclick="spawnGate('OR')">OR</button>
+  <button onclick="spawnGate('NOT')">NOT</button>
+  <button onclick="spawnGate('XOR')">XOR</button>
+  <hr>
+  <button onclick="spawnGate('DELAY')">DELAY</button>
+  <button onclick="spawnGate('TOGGLE')">TOGGLE</button>
+  <button onclick="spawnGate('LATCH')">LATCH</button>
+  <button onclick="spawnGate('BLINK')">BLINK</button>
+  <button onclick="spawnGate('REPEAT')">REPEAT</button>
+</div>
+
+<svg id="canvas"></svg>
 
 <script src="sim.js"></script>
 </body>
