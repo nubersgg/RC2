@@ -1,161 +1,239 @@
 const svg = document.getElementById("canvas");
 
-let nodes = [];
-let wires = [];
-let dragNode = null;
+const nodes = [];
+const wires = [];
+
+let draggingNode = null;
 let dragOffset = {x:0,y:0};
-let dragWire = null;
+let activeWire = null;
 
-// ---------- NODE CREATION ----------
-function spawnGate(type){ createNode(type, 2, 1); }
-function spawnInput(type){ createNode(type, 0, 1); }
-
-function createNode(type, inputs, outputs){
-  const x = 100 + Math.random()*400;
-  const y = 80 + Math.random()*300;
-
-  const g = document.createElementNS(svg.namespaceURI,"g");
-  g.setAttribute("transform",`translate(${x},${y})`);
-
-  const body = document.createElementNS(svg.namespaceURI,"rect");
-  body.setAttribute("width",100);
-  body.setAttribute("height",40 + inputs*10);
-  body.setAttribute("class","gate");
-
-  const label = document.createElementNS(svg.namespaceURI,"text");
-  label.setAttribute("x",50);
-  label.setAttribute("y",14);
-  label.setAttribute("text-anchor","middle");
-  label.setAttribute("class","text");
-  label.textContent = type;
-
-  g.append(body,label);
-
-  const inPorts = [];
-  for(let i=0;i<inputs;i++){
-    const c = document.createElementNS(svg.namespaceURI,"circle");
-    c.setAttribute("cx",0);
-    c.setAttribute("cy",30+i*12);
-    c.setAttribute("r",5);
-    c.classList.add("port","input","off");
-    g.appendChild(c);
-    inPorts.push(c);
+/* =========================
+   Gate Definitions
+========================= */
+const GATES = {
+  LEVER: {
+    inputs: [],
+    outputs: ["OUT"],
+    init: () => ({ on:false }),
+    logic: (i,s) => [s.on]
+  },
+  AND: {
+    inputs: ["A","B"],
+    outputs: ["OUT"],
+    logic: i => [i.A && i.B]
+  },
+  OR: {
+    inputs: ["A","B"],
+    outputs: ["OUT"],
+    logic: i => [i.A || i.B]
+  },
+  NOT: {
+    inputs: ["A"],
+    outputs: ["OUT"],
+    logic: i => [!i.A]
   }
-
-  const out = document.createElementNS(svg.namespaceURI,"rect");
-  out.setAttribute("x",94);
-  out.setAttribute("y",30);
-  out.setAttribute("width",10);
-  out.setAttribute("height",10);
-  out.classList.add("port","output","off");
-  g.appendChild(out);
-
-  svg.appendChild(g);
-
-  const node = { type, g, inPorts, out, value:false };
-  nodes.push(node);
-
-  // drag node
-  g.addEventListener("mousedown",e=>{
-    if(e.target.classList.contains("port")) return;
-    dragNode = node;
-    const t = g.getCTM();
-    dragOffset.x = e.clientX - t.e;
-    dragOffset.y = e.clientY - t.f;
-  });
-
-  // start wire
-  out.addEventListener("mousedown",e=>{
-    e.stopPropagation();
-    const r = out.getBoundingClientRect();
-dragWire = {
-  from: node,
-  line: createLine(
-    r.left + r.width/2,
-    r.top + r.height/2
-  )
 };
+
+/* =========================
+   Utilities
+========================= */
+function svgPoint(evt){
+  const pt = svg.createSVGPoint();
+  pt.x = evt.clientX;
+  pt.y = evt.clientY;
+  return pt.matrixTransform(svg.getScreenCTM().inverse());
+}
+
+function create(tag){
+  return document.createElementNS("http://www.w3.org/2000/svg", tag);
+}
+
+/* =========================
+   Spawn Gate
+========================= */
+function spawn(type){
+  const def = GATES[type];
+  const node = {
+    type,
+    def,
+    state: def.init ? def.init() : {},
+    x: 100,
+    y: 100,
+    inPorts: [],
+    outPorts: [],
+    g: create("g")
+  };
+
+  node.g.classList.add("gate");
+  svg.appendChild(node.g);
+
+  const box = create("rect");
+  box.setAttribute("width", 80);
+  box.setAttribute("height", 40 + def.inputs.length * 10);
+  node.g.appendChild(box);
+
+  const label = create("text");
+  label.setAttribute("x", 40);
+  label.setAttribute("y", 15);
+  label.setAttribute("text-anchor", "middle");
+  label.textContent = type;
+  node.g.appendChild(label);
+
+  def.inputs.forEach((name,i)=>{
+    const p = create("circle");
+    p.setAttribute("r", 5);
+    p.classList.add("port","in");
+    node.g.appendChild(p);
+    node.inPorts.push({name, el:p, value:false});
   });
 
-  return node;
-}
+  def.outputs.forEach((name,i)=>{
+    const p = create("rect");
+    p.setAttribute("width",10);
+    p.setAttribute("height",10);
+    p.classList.add("port","out");
+    node.g.appendChild(p);
+    node.outPorts.push({name, el:p, value:false});
+  });
 
-// ---------- WIRES ----------
-function createLine(x,y){
-  const l = document.createElementNS(svg.namespaceURI,"line");
-  l.setAttribute("x1",x); l.setAttribute("y1",y);
-  l.setAttribute("x2",x); l.setAttribute("y2",y);
-  l.classList.add("wire","off");
-  svg.appendChild(l);
-  return l;
-}
-
-// ---------- MOUSE ----------
-svg.addEventListener("mousemove",e=>{
-  const p = getMousePos(e);
-
-  if(dragNode){
-    dragNode.g.setAttribute("transform",
-      `translate(${p.x-dragOffset.x},${p.y-dragOffset.y})`);
+  if(type === "LEVER"){
+    node.g.ondblclick = ()=>{
+      node.state.on = !node.state.on;
+    };
   }
 
-  if(dragWire){
-    dragWire.line.setAttribute("x2",p.x);
-    dragWire.line.setAttribute("y2",p.y);
-  }
-});
+  node.g.onmousedown = e=>{
+    const p = svgPoint(e);
+    draggingNode = node;
+    dragOffset.x = p.x - node.x;
+    dragOffset.y = p.y - node.y;
+  };
 
-svg.addEventListener("mouseup",e=>{
-  dragNode = null;
+  nodes.push(node);
+  updateNode(node);
+}
 
-  if(dragWire){
-    const target = document.elementFromPoint(e.clientX,e.clientY);
-    if(target && target.classList.contains("input")){
-      wires.push({ from:dragWire.from, to:target, line:dragWire.line });
-    } else {
-      svg.removeChild(dragWire.line);
+/* =========================
+   Update Node UI
+========================= */
+function updateNode(n){
+  n.g.setAttribute("transform", `translate(${n.x},${n.y})`);
+
+  n.inPorts.forEach((p,i)=>{
+    p.el.setAttribute("cx", 0);
+    p.el.setAttribute("cy", 30 + i*10);
+  });
+
+  n.outPorts.forEach((p,i)=>{
+    p.el.setAttribute("x", 70);
+    p.el.setAttribute("y", 25 + i*10);
+  });
+}
+
+/* =========================
+   Wires
+========================= */
+function startWire(port){
+  const r = port.el.getBBox();
+  activeWire = {
+    from: port,
+    line: create("line")
+  };
+  activeWire.line.classList.add("wire");
+  activeWire.line.setAttribute("x1", r.x + r.width/2);
+  activeWire.line.setAttribute("y1", r.y + r.height/2);
+  activeWire.line.setAttribute("x2", r.x + r.width/2);
+  activeWire.line.setAttribute("y2", r.y + r.height/2);
+  svg.appendChild(activeWire.line);
+}
+
+function findInputAt(evt){
+  const p = svgPoint(evt);
+  for(const n of nodes){
+    for(const i of n.inPorts){
+      const r = i.el.getBBox();
+      if(
+        p.x >= n.x + r.x && p.x <= n.x + r.x + r.width &&
+        p.y >= n.y + r.y && p.y <= n.y + r.y + r.height
+      ) return i;
     }
-    dragWire = null;
+  }
+  return null;
+}
+
+/* =========================
+   Mouse Events
+========================= */
+svg.onmousemove = e=>{
+  if(draggingNode){
+    const p = svgPoint(e);
+    draggingNode.x = p.x - dragOffset.x;
+    draggingNode.y = p.y - dragOffset.y;
+    updateNode(draggingNode);
+    updateWires();
+  }
+  if(activeWire){
+    const p = svgPoint(e);
+    activeWire.line.setAttribute("x2", p.x);
+    activeWire.line.setAttribute("y2", p.y);
+  }
+};
+
+svg.onmouseup = e=>{
+  draggingNode = null;
+  if(activeWire){
+    const target = findInputAt(e);
+    if(target){
+      wires.push({from:activeWire.from, to:target, line:activeWire.line});
+    } else {
+      activeWire.line.remove();
+    }
+    activeWire = null;
+  }
+};
+
+/* =========================
+   Port Events
+========================= */
+svg.addEventListener("mousedown", e=>{
+  if(e.target.classList.contains("out")){
+    const node = nodes.find(n=>n.outPorts.some(p=>p.el===e.target));
+    const port = node.outPorts.find(p=>p.el===e.target);
+    startWire(port);
+    e.stopPropagation();
   }
 });
 
-// ---------- LOGIC LOOP ----------
+/* =========================
+   Logic Loop
+========================= */
+function updateWires(){
+  for(const w of wires){
+    const fr = w.from.el.getBBox();
+    const to = w.to.el.getBBox();
+    const fn = nodes.find(n=>n.outPorts.includes(w.from));
+    const tn = nodes.find(n=>n.inPorts.includes(w.to));
+
+    w.line.setAttribute("x1", fn.x + fr.x + fr.width/2);
+    w.line.setAttribute("y1", fn.y + fr.y + fr.height/2);
+    w.line.setAttribute("x2", tn.x + to.x + to.width/2);
+    w.line.setAttribute("y2", tn.y + to.y + to.height/2);
+  }
+}
+
 setInterval(()=>{
   for(const n of nodes){
-    if(n.type==="BUTTON") n.value=false;
-    if(n.type==="AND"){
-      n.value = readInputs(n).every(v=>v);
-    }
-    if(n.type==="OR"){
-      n.value = readInputs(n).some(v=>v);
-    }
-    if(n.type==="NOT"){
-      n.value = !readInputs(n)[0];
-    }
-    updatePort(n.out,n.value);
+    const inputs = {};
+    n.inPorts.forEach(p=>inputs[p.name] = p.value || false);
+    const out = n.def.logic(inputs, n.state);
+    n.outPorts.forEach((p,i)=>{
+      p.value = out[i];
+      p.el.classList.toggle("active", p.value);
+    });
   }
 
   for(const w of wires){
-    w.line.classList.toggle("on",w.from.value);
-    w.line.classList.toggle("off",!w.from.value);
+    w.to.value = w.from.value;
+    w.line.classList.toggle("active", w.from.value);
   }
-},100);
-
-// ---------- HELPERS ----------
-function readInputs(n){
-  return n.inPorts.map(p=>{
-    const w = wires.find(w=>w.to===p);
-    return w ? w.from.value : false;
-  });
-}
-
-function updatePort(p,on){
-  p.classList.toggle("on",on);
-  p.classList.toggle("off",!on);
-}
-
-function getMousePos(e){
-  const pt = svg.createSVGPoint();
-  pt.x=e.clientX; pt.y=e.clientY;
-  return pt.matrixTransform(svg.getScreenCTM().inverse());
-}
+}, 50);
