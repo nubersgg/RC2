@@ -67,8 +67,14 @@ function createNode(type, inputs, outputs){
   // start wire
   out.addEventListener("mousedown",e=>{
     e.stopPropagation();
-    const p = getMousePos(e);
-    dragWire = { from:node, line:createLine(p.x,p.y) };
+    const r = out.getBoundingClientRect();
+dragWire = {
+  from: node,
+  line: createLine(
+    r.left + r.width/2,
+    r.top + r.height/2
+  )
+};
   });
 
   return node;
