@@ -7,22 +7,14 @@
 </head>
 <body>
 
-<!-- Top gate bar -->
 <div id="topbar">
-  <div id="gateButtons">
-    <button onclick="spawnGate('AND')">AND</button>
-    <button onclick="spawnGate('OR')">OR</button>
-    <button onclick="spawnGate('NOT')">NOT</button>
-    <button onclick="spawnGate('XOR')">XOR</button>
-    <button onclick="spawnGate('DELAY')">DELAY</button>
-    <button onclick="spawnGate('TOGGLE')">TOGGLE</button>
-    <button onclick="spawnGate('LATCH')">LATCH</button>
-    <button onclick="spawnGate('BLINK')">BLINK</button>
-    <button onclick="spawnGate('REPEAT')">REPEAT</button>
-  </div>
+  <button onclick="spawnInput('BUTTON')">Button</button>
+  <button onclick="spawnInput('LEVER')">Lever</button>
+  <button onclick="spawnGate('AND')">AND</button>
+  <button onclick="spawnGate('OR')">OR</button>
+  <button onclick="spawnGate('NOT')">NOT</button>
 </div>
 
-<!-- Main canvas -->
 <svg id="canvas"></svg>
 
 <script src="sim.js"></script>
