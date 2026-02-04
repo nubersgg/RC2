@@ -1,76 +1,155 @@
 const svg = document.getElementById("canvas");
-let gates = [];
+
+let nodes = [];
 let wires = [];
-let draggingGate = null;
+let dragNode = null;
 let dragOffset = {x:0,y:0};
-let draggingWire = null;
+let dragWire = null;
 
-// --- SPAWN GATE ---
-function spawnGate(type){
+// ---------- NODE CREATION ----------
+function spawnGate(type){ createNode(type, 2, 1); }
+function spawnInput(type){ createNode(type, 0, 1); }
+
+function createNode(type, inputs, outputs){
   const x = 100 + Math.random()*400;
-  const y = 100 + Math.random()*200;
-  const gate = createGate(x,y,type);
-  gates.push(gate);
-}
+  const y = 80 + Math.random()*300;
 
-// --- CREATE GATE ---
-function createGate(x,y,type){
   const g = document.createElementNS(svg.namespaceURI,"g");
   g.setAttribute("transform",`translate(${x},${y})`);
 
-  // Gate body
   const body = document.createElementNS(svg.namespaceURI,"rect");
   body.setAttribute("width",100);
-  body.setAttribute("height",50);
+  body.setAttribute("height",40 + inputs*10);
   body.setAttribute("class","gate");
 
-  // Input ports (1-2 depending on gate type)
-  const input1 = document.createElementNS(svg.namespaceURI,"circle");
-  input1.setAttribute("cx",0);
-  input1.setAttribute("cy",15);
-  input1.setAttribute("r",6);
-  input1.setAttribute("class","port input off");
+  const label = document.createElementNS(svg.namespaceURI,"text");
+  label.setAttribute("x",50);
+  label.setAttribute("y",14);
+  label.setAttribute("text-anchor","middle");
+  label.setAttribute("class","text");
+  label.textContent = type;
 
-  const input2 = document.createElementNS(svg.namespaceURI,"circle");
-  input2.setAttribute("cx",0);
-  input2.setAttribute("cy",35);
-  input2.setAttribute("r",6);
-  input2.setAttribute("class","port input off");
+  g.append(body,label);
 
-  // Output port
-  const output = document.createElementNS(svg.namespaceURI,"rect");
-  output.setAttribute("x",88);
-  output.setAttribute("y",20);
-  output.setAttribute("width",12);
-  output.setAttribute("height",12);
-  output.setAttribute("class","port output off");
+  const inPorts = [];
+  for(let i=0;i<inputs;i++){
+    const c = document.createElementNS(svg.namespaceURI,"circle");
+    c.setAttribute("cx",0);
+    c.setAttribute("cy",30+i*12);
+    c.setAttribute("r",5);
+    c.classList.add("port","input","off");
+    g.appendChild(c);
+    inPorts.push(c);
+  }
 
-  // Gate name text
-  const gateText = document.createElementNS(svg.namespaceURI,"text");
-  gateText.setAttribute("x",50);
-  gateText.setAttribute("y",12);
-  gateText.setAttribute("text-anchor","middle");
-  gateText.setAttribute("class","gateText");
-  gateText.textContent = type;
+  const out = document.createElementNS(svg.namespaceURI,"rect");
+  out.setAttribute("x",94);
+  out.setAttribute("y",30);
+  out.setAttribute("width",10);
+  out.setAttribute("height",10);
+  out.classList.add("port","output","off");
+  g.appendChild(out);
 
-  // Optional mode input (for Delay, etc.)
-  let modeText=null;
-  let modeButton=null;
-  if(type==="DELAY"){
-    modeText = document.createElementNS(svg.namespaceURI,"text");
-    modeText.setAttribute("x",50);
-    modeText.setAttribute("y",48);
-    modeText.setAttribute("text-anchor","middle");
-    modeText.setAttribute("class","modeText");
-    modeText.textContent = "Pink";
-    g.appendChild(modeText);
+  svg.appendChild(g);
 
-    modeButton = document.createElementNS("http://www.w3.org/1999/xhtml","button");
-    modeButton.style.position="absolute";
-    modeButton.style.left=(x+10)+"px";
-    modeButton.style.top=(y+60)+"px";
-    modeButton.textContent="Change Mode";
-    document.body.appendChild(modeButton);
+  const node = { type, g, inPorts, out, value:false };
+  nodes.push(node);
 
-    let modes=["Pink","Blue","Yellow"];
-    let idx=
+  // drag node
+  g.addEventListener("mousedown",e=>{
+    if(e.target.classList.contains("port")) return;
+    dragNode = node;
+    const t = g.getCTM();
+    dragOffset.x = e.clientX - t.e;
+    dragOffset.y = e.clientY - t.f;
+  });
+
+  // start wire
+  out.addEventListener("mousedown",e=>{
+    e.stopPropagation();
+    const p = getMousePos(e);
+    dragWire = { from:node, line:createLine(p.x,p.y) };
+  });
+
+  return node;
+}
+
+// ---------- WIRES ----------
+function createLine(x,y){
+  const l = document.createElementNS(svg.namespaceURI,"line");
+  l.setAttribute("x1",x); l.setAttribute("y1",y);
+  l.setAttribute("x2",x); l.setAttribute("y2",y);
+  l.classList.add("wire","off");
+  svg.appendChild(l);
+  return l;
+}
+
+// ---------- MOUSE ----------
+svg.addEventListener("mousemove",e=>{
+  const p = getMousePos(e);
+
+  if(dragNode){
+    dragNode.g.setAttribute("transform",
+      `translate(${p.x-dragOffset.x},${p.y-dragOffset.y})`);
+  }
+
+  if(dragWire){
+    dragWire.line.setAttribute("x2",p.x);
+    dragWire.line.setAttribute("y2",p.y);
+  }
+});
+
+svg.addEventListener("mouseup",e=>{
+  dragNode = null;
+
+  if(dragWire){
+    const target = document.elementFromPoint(e.clientX,e.clientY);
+    if(target && target.classList.contains("input")){
+      wires.push({ from:dragWire.from, to:target, line:dragWire.line });
+    } else {
+      svg.removeChild(dragWire.line);
+    }
+    dragWire = null;
+  }
+});
+
+// ---------- LOGIC LOOP ----------
+setInterval(()=>{
+  for(const n of nodes){
+    if(n.type==="BUTTON") n.value=false;
+    if(n.type==="AND"){
+      n.value = readInputs(n).every(v=>v);
+    }
+    if(n.type==="OR"){
+      n.value = readInputs(n).some(v=>v);
+    }
+    if(n.type==="NOT"){
+      n.value = !readInputs(n)[0];
+    }
+    updatePort(n.out,n.value);
+  }
+
+  for(const w of wires){
+    w.line.classList.toggle("on",w.from.value);
+    w.line.classList.toggle("off",!w.from.value);
+  }
+},100);
+
+// ---------- HELPERS ----------
+function readInputs(n){
+  return n.inPorts.map(p=>{
+    const w = wires.find(w=>w.to===p);
+    return w ? w.from.value : false;
+  });
+}
+
+function updatePort(p,on){
+  p.classList.toggle("on",on);
+  p.classList.toggle("off",!on);
+}
+
+function getMousePos(e){
+  const pt = svg.createSVGPoint();
+  pt.x=e.clientX; pt.y=e.clientY;
+  return pt.matrixTransform(svg.getScreenCTM().inverse());
+}
