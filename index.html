@@ -1,6 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
-<head>
+<html lang="en"><head>
 <meta charset="UTF-8">
 <title>Refinery Caves 2 — Logic Sim &amp; Lag Lab</title>
 <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -53,6 +52,9 @@ html,body{height:100%;margin:0;background:var(--bg);color:var(--text);font:13px/
 .circuitTab .fnToggle{opacity:.45;padding:0 2px;font-style:italic;font-weight:700;border-radius:3px;}
 .circuitTab .fnToggle:hover{opacity:1;background:rgba(163,230,53,.18);}
 .circuitTab .fnToggle.on{opacity:1;color:#a3e635;}
+.circuitTab .pubToggle{opacity:.35;padding:0 2px;font-size:10px;border-radius:3px;}
+.circuitTab .pubToggle:hover{opacity:1;background:rgba(91,141,255,.18);}
+.circuitTab .pubToggle.on{opacity:1;color:var(--accent);}
 #circuitTabs .btn{padding:4px 8px;font-size:14px;}
 #folderStatus{font-size:10px;color:var(--sub);margin-left:6px;}
 .catHead{font-size:10px;text-transform:uppercase;letter-spacing:.08em;color:var(--sub);margin:10px 6px 4px;}
@@ -204,10 +206,10 @@ canvas{position:absolute;inset:0;width:100%;height:100%;cursor:default;}
     <button class="btn" id="btnLoad">Load</button>
     <button class="btn" id="btnClear">New</button>
     <button class="btn" id="btnPublish" title="Generate a public, read-only copy of this build">⬆ Publish</button>
-    <button class="btn" id="btnSandbox">✎ Build your own</button>
+    <button class="btn hidden" id="btnSandbox">✎ Build your own</button>
     <div class="spacer"></div>
-    <div id="modePill" class="hidden"></div>
-    <div id="costPill">$0</div>
+    <div id="modePill" class="hidden" title="You can trigger inputs and run the simulation, but not change the circuits.">View only</div>
+    <div id="costPill">$8,490</div>
     <button class="btn" id="btnHelp">?</button>
   </div>
   <div id="circuitTabs"></div>
@@ -218,12 +220,12 @@ canvas{position:absolute;inset:0;width:100%;height:100%;cursor:default;}
       <div id="paletteList"></div>
     </div>
     <div id="canvasWrap">
-      <canvas id="board"></canvas>
-      <div id="controlBar"></div>
+      <canvas id="board" width="1348" height="869" style="width: 1348px; height: 869px;"></canvas>
+      <div id="controlBar" class=""></div>
       <div id="toastWrap"></div>
       <div id="lagBadge">
-        <div class="row"><span>Server tick</span><span id="lagHz">— Hz</span></div>
-        <div class="row"><span>Last gap</span><span id="lagGap">0 ms</span></div>
+        <div class="row"><span>Server tick</span><span id="lagHz">20.0 Hz (steady)</span></div>
+        <div class="row"><span>Last gap</span><span id="lagGap">50 ms</span></div>
         <div class="row"><span>Delayed deliveries</span><span id="lagDrops">0</span></div>
         <canvas id="tickSpark" width="150" height="26"></canvas>
       </div>
@@ -233,13 +235,12 @@ canvas{position:absolute;inset:0;width:100%;height:100%;cursor:default;}
       <div id="tabs">
         <button data-tab="summary" class="active">Summary</button>
         <button data-tab="cost">Cost</button>
-        <button data-tab="lag">World / Lag</button>
-        <button data-tab="log">Log</button>
+        <button data-tab="lag">Config</button>
       </div>
       <div class="tabPanel active" id="panel-summary"></div>
       <div class="tabPanel" id="panel-cost"></div>
       <div class="tabPanel" id="panel-lag"></div>
-      <div class="tabPanel" id="panel-log"></div>
+      <div class="tabPanel hidden" id="panel-log"></div>
     </div>
   </div>
 </div>
@@ -1165,11 +1166,7 @@ const KINDS = {
    only in their own browser. For genuine access control you'd need a real
    server, which a static host like GitHub Pages doesn't provide.
 --------------------------------------------------------------------------*/
-const PUBLISH = {
-  locked: false,   // flipped to true in the generated public copy
-  key: '',         // secret for ?edit=<key>
-  tabs: null       // baked-in circuits: [{name, isFunction, data}]
-};
+const PUBLISH = {"locked":true,"key":"","tabs":[{"name":"Selector","isFunction":true,"hidden":false,"data":"{\"version\":2,\"nodes\":[{\"id\":\"uud19det5x2j\",\"type\":\"func_output\",\"x\":280,\"y\":-462.3333333333333,\"cfg\":{\"label\":\"A\",\"type\":\"bool\"},\"custom\":\"\",\"groupId\":null,\"state\":{\"value\":false},\"muted\":false},{\"id\":\"jlyvae325zi3\",\"type\":\"func_output\",\"x\":280,\"y\":-366,\"cfg\":{\"label\":\"B\",\"type\":\"bool\"},\"custom\":\"\",\"groupId\":null,\"state\":{\"value\":false},\"muted\":false},{\"id\":\"8qt0mhsq6049\",\"type\":\"func_output\",\"x\":280,\"y\":-264,\"cfg\":{\"label\":\"C\",\"type\":\"bool\"},\"custom\":\"\",\"groupId\":null,\"state\":{\"value\":true},\"muted\":false},{\"id\":\"olrcqqlo6uzb\",\"type\":\"and\",\"x\":-70,\"y\":-381.3333333333333,\"cfg\":{},\"custom\":\"\",\"groupId\":null,\"state\":{},\"muted\":false},{\"id\":\"seong3md86pq\",\"type\":\"latch_circuit\",\"x\":120,\"y\":-280,\"cfg\":{},\"custom\":\"\",\"groupId\":null,\"state\":{\"on\":false},\"muted\":false},{\"id\":\"08718qre89aj\",\"type\":\"latch_circuit\",\"x\":120,\"y\":-382.66666666666663,\"cfg\":{},\"custom\":\"\",\"groupId\":null,\"state\":{\"on\":true},\"muted\":false},{\"id\":\"7ylsqna48c7s\",\"type\":\"latch_circuit\",\"x\":120,\"y\":-480,\"cfg\":{},\"custom\":\"\",\"groupId\":null,\"state\":{\"on\":true},\"muted\":false},{\"id\":\"qtw3dm9q8drj\",\"type\":\"and\",\"x\":-70,\"y\":-280,\"cfg\":{},\"custom\":\"\",\"groupId\":null,\"state\":{},\"muted\":false},{\"id\":\"kst7r1i78fms\",\"type\":\"and\",\"x\":-70,\"y\":-478.3333333333333,\"cfg\":{},\"custom\":\"\",\"groupId\":null,\"state\":{},\"muted\":false},{\"id\":\"zkw0r1omf61k\",\"type\":\"blink_circuit\",\"x\":-480,\"y\":-363.8333333333333,\"cfg\":{\"pulseTicks\":1},\"custom\":\"\",\"groupId\":null,\"state\":{\"prevIn\":false,\"startTick\":null,\"pending\":false,\"ticks\":440},\"muted\":false},{\"id\":\"isxetgm2qvnw\",\"type\":\"func_input\",\"x\":-650,\"y\":-363.8333333333333,\"cfg\":{\"label\":\"Button\",\"type\":\"bool\"},\"custom\":\"\",\"groupId\":null,\"state\":{},\"muted\":false},{\"id\":\"l0u5vtnoa026\",\"type\":\"wire_node\",\"x\":-86,\"y\":-448,\"cfg\":{},\"custom\":\"\",\"groupId\":null,\"state\":{},\"muted\":false},{\"id\":\"hy08ydwua2ob\",\"type\":\"wire_node\",\"x\":-86,\"y\":-490,\"cfg\":{},\"custom\":\"\",\"groupId\":null,\"state\":{},\"muted\":false},{\"id\":\"zw5l554wa43r\",\"type\":\"wire_node\",\"x\":273,\"y\":-490,\"cfg\":{},\"custom\":\"\",\"groupId\":null,\"state\":{},\"muted\":false},{\"id\":\"69hy1gj7a997\",\"type\":\"wire_node\",\"x\":273,\"y\":-449.6666666666667,\"cfg\":{},\"custom\":\"\",\"groupId\":null,\"state\":{},\"muted\":false},{\"id\":\"o35p72i2al7g\",\"type\":\"wire_node\",\"x\":-83,\"y\":-389.75,\"cfg\":{},\"custom\":\"\",\"groupId\":null,\"state\":{},\"muted\":false},{\"id\":\"rp6dedofc0r3\",\"type\":\"wire_node\",\"x\":-120,\"y\":-336.8333333333333,\"cfg\":{},\"custom\":\"\",\"groupId\":null,\"state\":{},\"muted\":false},{\"id\":\"pc66u3cqi6a7\",\"type\":\"wire_node\",\"x\":-120,\"y\":-434.66666666666663,\"cfg\":{},\"custom\":\"\",\"groupId\":null,\"state\":{},\"muted\":false},{\"id\":\"6ctit1vkidbe\",\"type\":\"wire_node\",\"x\":-120,\"y\":-237,\"cfg\":{},\"custom\":\"\",\"groupId\":null,\"state\":{},\"muted\":false},{\"id\":\"nqzpkq7161rq\",\"type\":\"wire_node\",\"x\":90,\"y\":-342.5,\"cfg\":{},\"custom\":\"\",\"groupId\":null,\"state\":{},\"muted\":false},{\"id\":\"jggm5xhw6j7w\",\"type\":\"wire_node\",\"x\":90,\"y\":-249.66666666666666,\"cfg\":{},\"custom\":\"\",\"groupId\":null,\"state\":{},\"muted\":false},{\"id\":\"hwo9lb5e6pgo\",\"type\":\"wire_node\",\"x\":90,\"y\":-287.7731436040769,\"cfg\":{},\"custom\":\"\",\"groupId\":null,\"state\":{},\"muted\":false},{\"id\":\"w837skkh6rat\",\"type\":\"wire_node\",\"x\":-83,\"y\":-288.41666666666663,\"cfg\":{},\"custom\":\"\",\"groupId\":null,\"state\":{},\"muted\":false},{\"id\":\"7h4bjkpn6uy7\",\"type\":\"wire_node\",\"x\":-83,\"y\":-249.66666666666666,\"cfg\":{},\"custom\":\"\",\"groupId\":null,\"state\":{},\"muted\":false},{\"id\":\"lyfdvm4j709h\",\"type\":\"wire_node\",\"x\":-83,\"y\":-352.3333333333333,\"cfg\":{},\"custom\":\"\",\"groupId\":null,\"state\":{},\"muted\":false},{\"id\":\"cdhv4zs51mp5\",\"type\":\"wire_node\",\"x\":273,\"y\":-390.9583333333333,\"cfg\":{},\"custom\":\"\",\"groupId\":null,\"state\":{},\"muted\":false},{\"id\":\"oxkm0oni1t3c\",\"type\":\"wire_node\",\"x\":273,\"y\":-352.3333333333333,\"cfg\":{},\"custom\":\"\",\"groupId\":null,\"state\":{},\"muted\":false},{\"id\":\"ue8k8jo12e1s\",\"type\":\"wire_node\",\"x\":96,\"y\":-243.33333333333331,\"cfg\":{},\"custom\":\"\",\"groupId\":null,\"state\":{},\"muted\":false},{\"id\":\"cbqy3y062khg\",\"type\":\"wire_node\",\"x\":96,\"y\":-448.83333333333337,\"cfg\":{},\"custom\":\"\",\"groupId\":null,\"state\":{},\"muted\":false},{\"id\":\"z38o4do92nkl\",\"type\":\"wire_node\",\"x\":87,\"y\":-439.875,\"cfg\":{},\"custom\":\"\",\"groupId\":null,\"state\":{},\"muted\":false},{\"id\":\"8qwzfj4j2two\",\"type\":\"wire_node\",\"x\":87,\"y\":-352.3333333333333,\"cfg\":{},\"custom\":\"\",\"groupId\":null,\"state\":{},\"muted\":false},{\"id\":\"xw8tc07k3byt\",\"type\":\"wire_node\",\"x\":96,\"y\":-237,\"cfg\":{},\"custom\":\"\",\"groupId\":null,\"state\":{},\"muted\":false}],\"wires\":[{\"id\":\"4xob0ax1q3uw\",\"from\":{\"node\":\"seong3md86pq\",\"port\":\"NQ\"},\"to\":{\"node\":\"8qt0mhsq6049\",\"port\":\"IN\"},\"points\":[]},{\"id\":\"bod4ihrsq5pu\",\"from\":{\"node\":\"08718qre89aj\",\"port\":\"NQ\"},\"to\":{\"node\":\"jlyvae325zi3\",\"port\":\"IN\"},\"points\":[]},{\"id\":\"39fifkbiq920\",\"from\":{\"node\":\"7ylsqna48c7s\",\"port\":\"NQ\"},\"to\":{\"node\":\"uud19det5x2j\",\"port\":\"IN\"},\"points\":[]},{\"id\":\"88zg4pbfqxh4\",\"from\":{\"node\":\"isxetgm2qvnw\",\"port\":\"OUT\"},\"to\":{\"node\":\"zkw0r1omf61k\",\"port\":\"A\"},\"points\":[]},{\"id\":\"443z6kt1a026\",\"from\":{\"node\":\"l0u5vtnoa026\",\"port\":\"A\"},\"to\":{\"node\":\"kst7r1i78fms\",\"port\":\"A\"},\"points\":[]},{\"id\":\"sm0ovc8ka2ob\",\"from\":{\"node\":\"hy08ydwua2ob\",\"port\":\"A\"},\"to\":{\"node\":\"l0u5vtnoa026\",\"port\":\"A\"},\"points\":[]},{\"id\":\"rcgu78rma43r\",\"from\":{\"node\":\"zw5l554wa43r\",\"port\":\"A\"},\"to\":{\"node\":\"hy08ydwua2ob\",\"port\":\"A\"},\"points\":[]},{\"id\":\"d21et76ga997\",\"from\":{\"node\":\"7ylsqna48c7s\",\"port\":\"Q\"},\"to\":{\"node\":\"69hy1gj7a997\",\"port\":\"A\"},\"points\":[]},{\"id\":\"r26mbvhya997\",\"from\":{\"node\":\"69hy1gj7a997\",\"port\":\"A\"},\"to\":{\"node\":\"zw5l554wa43r\",\"port\":\"A\"},\"points\":[]},{\"id\":\"qg951v08c0r3\",\"from\":{\"node\":\"zkw0r1omf61k\",\"port\":\"OUT\"},\"to\":{\"node\":\"rp6dedofc0r3\",\"port\":\"A\"},\"points\":[]},{\"id\":\"wxp76iz0c1s8\",\"from\":{\"node\":\"rp6dedofc0r3\",\"port\":\"A\"},\"to\":{\"node\":\"olrcqqlo6uzb\",\"port\":\"B\"},\"points\":[]},{\"id\":\"n17c2yiwi6a7\",\"from\":{\"node\":\"rp6dedofc0r3\",\"port\":\"A\"},\"to\":{\"node\":\"pc66u3cqi6a7\",\"port\":\"A\"},\"points\":[]},{\"id\":\"2ruuzpwui6a7\",\"from\":{\"node\":\"pc66u3cqi6a7\",\"port\":\"A\"},\"to\":{\"node\":\"kst7r1i78fms\",\"port\":\"B\"},\"points\":[]},{\"id\":\"p9giar5eidbe\",\"from\":{\"node\":\"rp6dedofc0r3\",\"port\":\"A\"},\"to\":{\"node\":\"6ctit1vkidbe\",\"port\":\"A\"},\"points\":[]},{\"id\":\"bo5gc91c5vzz\",\"from\":{\"node\":\"qtw3dm9q8drj\",\"port\":\"B\"},\"to\":{\"node\":\"6ctit1vkidbe\",\"port\":\"A\"},\"points\":[]},{\"id\":\"l4phhxt461rq\",\"from\":{\"node\":\"olrcqqlo6uzb\",\"port\":\"OUT\"},\"to\":{\"node\":\"nqzpkq7161rq\",\"port\":\"A\"},\"points\":[]},{\"id\":\"sa6x1fpx66m5\",\"from\":{\"node\":\"nqzpkq7161rq\",\"port\":\"A\"},\"to\":{\"node\":\"08718qre89aj\",\"port\":\"B\"},\"points\":[]},{\"id\":\"a39tggdh6j7w\",\"from\":{\"node\":\"jggm5xhw6j7w\",\"port\":\"A\"},\"to\":{\"node\":\"seong3md86pq\",\"port\":\"A\"},\"points\":[]},{\"id\":\"bt5nucxv6pgo\",\"from\":{\"node\":\"nqzpkq7161rq\",\"port\":\"A\"},\"to\":{\"node\":\"hwo9lb5e6pgo\",\"port\":\"A\"},\"points\":[]},{\"id\":\"8wk95sil6pgo\",\"from\":{\"node\":\"hwo9lb5e6pgo\",\"port\":\"A\"},\"to\":{\"node\":\"jggm5xhw6j7w\",\"port\":\"A\"},\"points\":[]},{\"id\":\"7shj905i6rat\",\"from\":{\"node\":\"hwo9lb5e6pgo\",\"port\":\"A\"},\"to\":{\"node\":\"w837skkh6rat\",\"port\":\"A\"},\"points\":[]},{\"id\":\"w21nhjms6uy7\",\"from\":{\"node\":\"w837skkh6rat\",\"port\":\"A\"},\"to\":{\"node\":\"7h4bjkpn6uy7\",\"port\":\"A\"},\"points\":[]},{\"id\":\"k3d8xxe46uy7\",\"from\":{\"node\":\"7h4bjkpn6uy7\",\"port\":\"A\"},\"to\":{\"node\":\"qtw3dm9q8drj\",\"port\":\"A\"},\"points\":[]},{\"id\":\"1kblxh1z709h\",\"from\":{\"node\":\"o35p72i2al7g\",\"port\":\"A\"},\"to\":{\"node\":\"lyfdvm4j709h\",\"port\":\"A\"},\"points\":[]},{\"id\":\"5fbd5723709h\",\"from\":{\"node\":\"lyfdvm4j709h\",\"port\":\"A\"},\"to\":{\"node\":\"olrcqqlo6uzb\",\"port\":\"A\"},\"points\":[]},{\"id\":\"903emb8l1mp5\",\"from\":{\"node\":\"cdhv4zs51mp5\",\"port\":\"A\"},\"to\":{\"node\":\"o35p72i2al7g\",\"port\":\"A\"},\"points\":[]},{\"id\":\"2na7xbpe1t3c\",\"from\":{\"node\":\"08718qre89aj\",\"port\":\"Q\"},\"to\":{\"node\":\"oxkm0oni1t3c\",\"port\":\"A\"},\"points\":[]},{\"id\":\"4l162zpa1t3c\",\"from\":{\"node\":\"oxkm0oni1t3c\",\"port\":\"A\"},\"to\":{\"node\":\"cdhv4zs51mp5\",\"port\":\"A\"},\"points\":[]},{\"id\":\"ax6fuman2e1s\",\"from\":{\"node\":\"qtw3dm9q8drj\",\"port\":\"OUT\"},\"to\":{\"node\":\"ue8k8jo12e1s\",\"port\":\"A\"},\"points\":[]},{\"id\":\"2yzw8nb62khg\",\"from\":{\"node\":\"ue8k8jo12e1s\",\"port\":\"A\"},\"to\":{\"node\":\"cbqy3y062khg\",\"port\":\"A\"},\"points\":[]},{\"id\":\"7rfg4nnx2khg\",\"from\":{\"node\":\"cbqy3y062khg\",\"port\":\"A\"},\"to\":{\"node\":\"7ylsqna48c7s\",\"port\":\"A\"},\"points\":[]},{\"id\":\"b084fj622nkl\",\"from\":{\"node\":\"kst7r1i78fms\",\"port\":\"OUT\"},\"to\":{\"node\":\"z38o4do92nkl\",\"port\":\"A\"},\"points\":[]},{\"id\":\"as7dxp4i2two\",\"from\":{\"node\":\"z38o4do92nkl\",\"port\":\"A\"},\"to\":{\"node\":\"8qwzfj4j2two\",\"port\":\"A\"},\"points\":[]},{\"id\":\"zltuh1v82two\",\"from\":{\"node\":\"8qwzfj4j2two\",\"port\":\"A\"},\"to\":{\"node\":\"08718qre89aj\",\"port\":\"A\"},\"points\":[]},{\"id\":\"6vk5k3zq3byt\",\"from\":{\"node\":\"ue8k8jo12e1s\",\"port\":\"A\"},\"to\":{\"node\":\"xw8tc07k3byt\",\"port\":\"A\"},\"points\":[]},{\"id\":\"v39a9ui43byt\",\"from\":{\"node\":\"xw8tc07k3byt\",\"port\":\"A\"},\"to\":{\"node\":\"seong3md86pq\",\"port\":\"B\"},\"points\":[]},{\"id\":\"b7q35h7l3v3c\",\"from\":{\"node\":\"z38o4do92nkl\",\"port\":\"A\"},\"to\":{\"node\":\"7ylsqna48c7s\",\"port\":\"B\"},\"points\":[]}],\"groups\":[],\"camera\":{\"x\":669.4127475657947,\"y\":945.1829530172869,\"zoom\":1.0382438373135439}}"},{"name":"Randomizer","isFunction":true,"hidden":false,"data":"{\"version\":2,\"nodes\":[{\"id\":\"n7of3bc5kdf5\",\"type\":\"randomizer\",\"x\":40.000000000000014,\"y\":-1400,\"cfg\":{\"chance\":2},\"custom\":\"\",\"groupId\":null,\"state\":{\"prevIn\":true,\"fail\":true},\"muted\":false},{\"id\":\"m0j8thnirvy3\",\"type\":\"randomizer\",\"x\":40.000000000000014,\"y\":-1580,\"cfg\":{\"chance\":2},\"custom\":\"\",\"groupId\":null,\"state\":{\"prevIn\":true,\"fail\":true},\"muted\":false},{\"id\":\"y3ner1lwrwrj\",\"type\":\"randomizer\",\"x\":40.000000000000014,\"y\":-1769.5833333333333,\"cfg\":{\"chance\":2},\"custom\":\"\",\"groupId\":null,\"state\":{\"prevIn\":true,\"fail\":false},\"muted\":false},{\"id\":\"myygosjtt5hm\",\"type\":\"memory_storage\",\"x\":1030,\"y\":-1706.9166666666665,\"cfg\":{\"initial\":\"\"},\"custom\":\"\",\"groupId\":null,\"state\":{\"value\":3,\"prevWriteActive\":true,\"prevResetActive\":false,\"lastWriteVal\":3,\"everSet\":true,\"active\":true},\"muted\":false},{\"id\":\"icqpt5u3wma7\",\"type\":\"number_emitter\",\"x\":220,\"y\":-1435,\"cfg\":{\"value\":8},\"custom\":\"\",\"groupId\":null,\"state\":{\"active\":false},\"muted\":false},{\"id\":\"h8w5qwm3wnau\",\"type\":\"number_emitter\",\"x\":220,\"y\":-1611.125,\"cfg\":{\"value\":4},\"custom\":\"\",\"groupId\":null,\"state\":{\"active\":false},\"muted\":false},{\"id\":\"v5oq3gmxwomm\",\"type\":\"number_emitter\",\"x\":220,\"y\":-1799.0416666666667,\"cfg\":{\"value\":2},\"custom\":\"\",\"groupId\":null,\"state\":{\"active\":true},\"muted\":false},{\"id\":\"5vubtm4a3wvm\",\"type\":\"number_op\",\"x\":1210,\"y\":-1683.5833333333333,\"cfg\":{\"mode\":\"/\"},\"custom\":\"\",\"groupId\":null,\"state\":{\"active\":true},\"muted\":false},{\"id\":\"xk66nqsk4h8q\",\"type\":\"number_round\",\"x\":1380,\"y\":-1670.4166666666663,\"cfg\":{\"mode\":\"down\"},\"custom\":\"\",\"groupId\":null,\"state\":{\"active\":true},\"muted\":false},{\"id\":\"dynbckp25kww\",\"type\":\"number_op\",\"x\":1720,\"y\":-1689.833333333333,\"cfg\":{\"mode\":\"-\"},\"custom\":\"\",\"groupId\":null,\"state\":{\"active\":true},\"muted\":false},{\"id\":\"dq0pygni5o70\",\"type\":\"number_op\",\"x\":1550,\"y\":-1615.1249999999998,\"cfg\":{\"mode\":\"*\"},\"custom\":\"\",\"groupId\":null,\"state\":{\"active\":true},\"muted\":false},{\"id\":\"t37k8lh28mxe\",\"type\":\"wire_node\",\"x\":1537,\"y\":-1698.4791666666665,\"cfg\":{},\"custom\":\"\",\"groupId\":null,\"state\":{},\"muted\":false},{\"id\":\"l07lqol98oqc\",\"type\":\"wire_node\",\"x\":1204,\"y\":-1698.8437499999998,\"cfg\":{},\"custom\":\"\",\"groupId\":null,\"state\":{},\"muted\":false},{\"id\":\"2pk0nnt8zwwv\",\"type\":\"number_op\",\"x\":470,\"y\":-1494,\"cfg\":{\"mode\":\"+\"},\"custom\":\"\",\"groupId\":null,\"state\":{\"active\":true},\"muted\":false},{\"id\":\"49f4uqi11csz\",\"type\":\"randomizer\",\"x\":40.00000000000003,\"y\":-1992.125,\"cfg\":{\"chance\":2},\"custom\":\"\",\"groupId\":null,\"state\":{\"prevIn\":true,\"fail\":true},\"muted\":false},{\"id\":\"zscm0sna1xu5\",\"type\":\"number_emitter\",\"x\":220,\"y\":-2024.7916666666667,\"cfg\":{\"value\":1},\"custom\":\"\",\"groupId\":null,\"state\":{\"active\":false},\"muted\":false},{\"id\":\"i01p7uuu2zn0\",\"type\":\"number_op\",\"x\":480,\"y\":-1867.1875,\"cfg\":{\"mode\":\"+\"},\"custom\":\"\",\"groupId\":null,\"state\":{\"active\":true},\"muted\":false},{\"id\":\"cz429d20dovq\",\"type\":\"number_emitter\",\"x\":220,\"y\":-1537,\"cfg\":{\"value\":0},\"custom\":\"\",\"groupId\":null,\"state\":{\"active\":true},\"muted\":false},{\"id\":\"vrtcd56rdwxy\",\"type\":\"number_emitter\",\"x\":220,\"y\":-1726.125,\"cfg\":{\"value\":0},\"custom\":\"\",\"groupId\":null,\"state\":{\"active\":false},\"muted\":false},{\"id\":\"fdcbyyh2e101\",\"type\":\"number_emitter\",\"x\":220,\"y\":-1952.125,\"cfg\":{\"value\":0},\"custom\":\"\",\"groupId\":null,\"state\":{\"active\":true},\"muted\":false},{\"id\":\"aeun74k0e581\",\"type\":\"number_emitter\",\"x\":220,\"y\":-1360,\"cfg\":{\"value\":0},\"custom\":\"\",\"groupId\":null,\"state\":{\"active\":true},\"muted\":false},{\"id\":\"3pv0zgepf9ka\",\"type\":\"number_op\",\"x\":700,\"y\":-1707.0208333333335,\"cfg\":{\"mode\":\"+\"},\"custom\":\"\",\"groupId\":null,\"state\":{\"active\":true},\"muted\":false},{\"id\":\"x8v32xymgkzg\",\"type\":\"wire_node\",\"x\":1537,\"y\":-1666.5625,\"cfg\":{},\"custom\":\"\",\"groupId\":null,\"state\":{},\"muted\":false},{\"id\":\"d811o63z0h2e\",\"type\":\"func_input\",\"x\":-250,\"y\":-1393,\"cfg\":{\"label\":\"Generate\",\"testBool\":true,\"type\":\"bool\",\"testNum\":0,\"testText\":\"\"},\"custom\":\"\",\"groupId\":null,\"state\":{},\"muted\":false},{\"id\":\"28rk0ihj0jc6\",\"type\":\"func_input\",\"x\":870,\"y\":-1603.708333333333,\"cfg\":{\"label\":\"Max\",\"testBool\":false,\"type\":\"num\",\"testNum\":0,\"testText\":\"\"},\"custom\":\"\",\"groupId\":null,\"state\":{},\"muted\":false},{\"id\":\"qruda62p1n7f\",\"type\":\"func_output\",\"x\":1910,\"y\":-1683.5833333333333,\"cfg\":{\"label\":\"Output\",\"type\":\"bool\"},\"custom\":\"\",\"groupId\":null,\"state\":{\"value\":3,\"active\":true},\"muted\":false},{\"id\":\"o019kknh7tjo\",\"type\":\"number_op\",\"x\":870,\"y\":-1706.96875,\"cfg\":{\"mode\":\"+\"},\"custom\":\"\",\"groupId\":null,\"state\":{\"active\":true},\"muted\":false},{\"id\":\"i0ss41ef7zo7\",\"type\":\"number_emitter\",\"x\":700,\"y\":-1614.7916666666665,\"cfg\":{\"value\":1},\"custom\":\"\",\"groupId\":null,\"state\":{\"active\":true},\"muted\":false},{\"id\":\"lhgiib6y85ss\",\"type\":\"switch\",\"x\":500,\"y\":-1612.9583333333333,\"cfg\":{\"label\":\"\"},\"custom\":\"\",\"groupId\":null,\"state\":{\"on\":true},\"muted\":false},{\"id\":\"y02xdik5z388\",\"type\":\"memory_storage\",\"x\":1050,\"y\":-1607.7916666666665,\"cfg\":{\"initial\":\"\"},\"custom\":\"\",\"groupId\":null,\"state\":{\"value\":false,\"prevWriteActive\":true,\"prevResetActive\":false,\"lastWriteVal\":false,\"everSet\":true,\"active\":true},\"muted\":false},{\"id\":\"rr6kh0t1gpj0\",\"type\":\"func_number_display\",\"x\":1207,\"y\":-1812.8489583333333,\"cfg\":{\"label\":\"Unmodded\"},\"custom\":\"\",\"groupId\":null,\"state\":{},\"muted\":false}],\"wires\":[{\"id\":\"qfv5v8jlsgfl\",\"from\":{\"node\":\"n7of3bc5kdf5\",\"port\":\"A\"},\"to\":{\"node\":\"m0j8thnirvy3\",\"port\":\"A\"},\"points\":[]},{\"id\":\"9r7mbctvsh2n\",\"from\":{\"node\":\"m0j8thnirvy3\",\"port\":\"A\"},\"to\":{\"node\":\"y3ner1lwrwrj\",\"port\":\"A\"},\"points\":[]},{\"id\":\"gn6z7e7bxenu\",\"from\":{\"node\":\"y3ner1lwrwrj\",\"port\":\"L\"},\"to\":{\"node\":\"v5oq3gmxwomm\",\"port\":\"EN\"},\"points\":[]},{\"id\":\"dhfft4laxfnf\",\"from\":{\"node\":\"m0j8thnirvy3\",\"port\":\"L\"},\"to\":{\"node\":\"h8w5qwm3wnau\",\"port\":\"EN\"},\"points\":[]},{\"id\":\"ad9bvm9hxgme\",\"from\":{\"node\":\"n7of3bc5kdf5\",\"port\":\"L\"},\"to\":{\"node\":\"icqpt5u3wma7\",\"port\":\"EN\"},\"points\":[]},{\"id\":\"twe451yw4akd\",\"from\":{\"node\":\"myygosjtt5hm\",\"port\":\"READ\"},\"to\":{\"node\":\"5vubtm4a3wvm\",\"port\":\"A\"},\"points\":[]},{\"id\":\"d3e8sqzt4iy1\",\"from\":{\"node\":\"5vubtm4a3wvm\",\"port\":\"OUT\"},\"to\":{\"node\":\"xk66nqsk4h8q\",\"port\":\"A\"},\"points\":[]},{\"id\":\"vlhytbfs5v76\",\"from\":{\"node\":\"xk66nqsk4h8q\",\"port\":\"OUT\"},\"to\":{\"node\":\"dq0pygni5o70\",\"port\":\"A\"},\"points\":[]},{\"id\":\"vzxmrlxm8oqc\",\"from\":{\"node\":\"myygosjtt5hm\",\"port\":\"READ\"},\"to\":{\"node\":\"l07lqol98oqc\",\"port\":\"A\"},\"points\":[]},{\"id\":\"s0r2takq8oqc\",\"from\":{\"node\":\"l07lqol98oqc\",\"port\":\"A\"},\"to\":{\"node\":\"t37k8lh28mxe\",\"port\":\"A\"},\"points\":[]},{\"id\":\"a9egspft8vp2\",\"from\":{\"node\":\"dq0pygni5o70\",\"port\":\"OUT\"},\"to\":{\"node\":\"dynbckp25kww\",\"port\":\"B\"},\"points\":[]},{\"id\":\"shc9rc4w0696\",\"from\":{\"node\":\"icqpt5u3wma7\",\"port\":\"OUT\"},\"to\":{\"node\":\"2pk0nnt8zwwv\",\"port\":\"B\"},\"points\":[]},{\"id\":\"6r5256t61e7f\",\"from\":{\"node\":\"49f4uqi11csz\",\"port\":\"A\"},\"to\":{\"node\":\"y3ner1lwrwrj\",\"port\":\"A\"},\"points\":[]},{\"id\":\"wfntz6od1zsl\",\"from\":{\"node\":\"49f4uqi11csz\",\"port\":\"L\"},\"to\":{\"node\":\"zscm0sna1xu5\",\"port\":\"EN\"},\"points\":[]},{\"id\":\"ehjzul8134ta\",\"from\":{\"node\":\"v5oq3gmxwomm\",\"port\":\"OUT\"},\"to\":{\"node\":\"i01p7uuu2zn0\",\"port\":\"B\"},\"points\":[]},{\"id\":\"c9680dp9bin0\",\"from\":{\"node\":\"i01p7uuu2zn0\",\"port\":\"A\"},\"to\":{\"node\":\"zscm0sna1xu5\",\"port\":\"OUT\"},\"points\":[]},{\"id\":\"x0ozv4xwcimd\",\"from\":{\"node\":\"h8w5qwm3wnau\",\"port\":\"OUT\"},\"to\":{\"node\":\"2pk0nnt8zwwv\",\"port\":\"A\"},\"points\":[]},{\"id\":\"5kqkm2o4dq8i\",\"from\":{\"node\":\"m0j8thnirvy3\",\"port\":\"R\"},\"to\":{\"node\":\"cz429d20dovq\",\"port\":\"EN\"},\"points\":[]},{\"id\":\"kovhzhcgdyys\",\"from\":{\"node\":\"y3ner1lwrwrj\",\"port\":\"R\"},\"to\":{\"node\":\"vrtcd56rdwxy\",\"port\":\"EN\"},\"points\":[]},{\"id\":\"pfno0nupe89u\",\"from\":{\"node\":\"n7of3bc5kdf5\",\"port\":\"R\"},\"to\":{\"node\":\"aeun74k0e581\",\"port\":\"EN\"},\"points\":[]},{\"id\":\"8z7meompe9la\",\"from\":{\"node\":\"aeun74k0e581\",\"port\":\"OUT\"},\"to\":{\"node\":\"2pk0nnt8zwwv\",\"port\":\"B\"},\"points\":[]},{\"id\":\"fq2lyqxieacd\",\"from\":{\"node\":\"2pk0nnt8zwwv\",\"port\":\"A\"},\"to\":{\"node\":\"cz429d20dovq\",\"port\":\"OUT\"},\"points\":[]},{\"id\":\"4s7ukl73ecc0\",\"from\":{\"node\":\"vrtcd56rdwxy\",\"port\":\"OUT\"},\"to\":{\"node\":\"i01p7uuu2zn0\",\"port\":\"B\"},\"points\":[]},{\"id\":\"1nj8hrt6eddf\",\"from\":{\"node\":\"i01p7uuu2zn0\",\"port\":\"A\"},\"to\":{\"node\":\"fdcbyyh2e101\",\"port\":\"OUT\"},\"points\":[]},{\"id\":\"suk8ifc6eeb8\",\"from\":{\"node\":\"fdcbyyh2e101\",\"port\":\"EN\"},\"to\":{\"node\":\"49f4uqi11csz\",\"port\":\"R\"},\"points\":[]},{\"id\":\"xqoa8k79fbwv\",\"from\":{\"node\":\"i01p7uuu2zn0\",\"port\":\"OUT\"},\"to\":{\"node\":\"3pv0zgepf9ka\",\"port\":\"A\"},\"points\":[]},{\"id\":\"dr214mblfcvd\",\"from\":{\"node\":\"3pv0zgepf9ka\",\"port\":\"B\"},\"to\":{\"node\":\"2pk0nnt8zwwv\",\"port\":\"OUT\"},\"points\":[]},{\"id\":\"qb3nfs1wgkzg\",\"from\":{\"node\":\"t37k8lh28mxe\",\"port\":\"A\"},\"to\":{\"node\":\"x8v32xymgkzg\",\"port\":\"A\"},\"points\":[]},{\"id\":\"ccqmzehtgkzg\",\"from\":{\"node\":\"x8v32xymgkzg\",\"port\":\"A\"},\"to\":{\"node\":\"dynbckp25kww\",\"port\":\"A\"},\"points\":[]},{\"id\":\"kfo4fooc1f09\",\"from\":{\"node\":\"d811o63z0h2e\",\"port\":\"OUT\"},\"to\":{\"node\":\"n7of3bc5kdf5\",\"port\":\"A\"},\"points\":[]},{\"id\":\"z3vwgqzx2524\",\"from\":{\"node\":\"dynbckp25kww\",\"port\":\"OUT\"},\"to\":{\"node\":\"qruda62p1n7f\",\"port\":\"IN\"},\"points\":[]},{\"id\":\"44rkfss37ves\",\"from\":{\"node\":\"o019kknh7tjo\",\"port\":\"OUT\"},\"to\":{\"node\":\"myygosjtt5hm\",\"port\":\"WRITE\"},\"points\":[]},{\"id\":\"ghfx210v7wn3\",\"from\":{\"node\":\"3pv0zgepf9ka\",\"port\":\"OUT\"},\"to\":{\"node\":\"o019kknh7tjo\",\"port\":\"A\"},\"points\":[]},{\"id\":\"oabywroc81d4\",\"from\":{\"node\":\"i0ss41ef7zo7\",\"port\":\"OUT\"},\"to\":{\"node\":\"o019kknh7tjo\",\"port\":\"B\"},\"points\":[]},{\"id\":\"df2675vw86y4\",\"from\":{\"node\":\"lhgiib6y85ss\",\"port\":\"OUT\"},\"to\":{\"node\":\"i0ss41ef7zo7\",\"port\":\"EN\"},\"points\":[]},{\"id\":\"bv0w53zyzb9x\",\"from\":{\"node\":\"28rk0ihj0jc6\",\"port\":\"OUT\"},\"to\":{\"node\":\"y02xdik5z388\",\"port\":\"WRITE\"},\"points\":[]},{\"id\":\"dug2jxwfzcn6\",\"from\":{\"node\":\"y02xdik5z388\",\"port\":\"READ\"},\"to\":{\"node\":\"dq0pygni5o70\",\"port\":\"B\"},\"points\":[]},{\"id\":\"l5sk11mizejb\",\"from\":{\"node\":\"y02xdik5z388\",\"port\":\"READ\"},\"to\":{\"node\":\"5vubtm4a3wvm\",\"port\":\"B\"},\"points\":[]},{\"id\":\"6yuhvq46gqr3\",\"from\":{\"node\":\"myygosjtt5hm\",\"port\":\"READ\"},\"to\":{\"node\":\"rr6kh0t1gpj0\",\"port\":\"A\"},\"points\":[]}],\"groups\":[],\"camera\":{\"x\":34.889684415209786,\"y\":1323.4659216114771,\"zoom\":0.5842952871215257}}"}]};
 let APP_MODE = 'edit';           // 'edit' | 'play'
 const UNLOCK_STORE = 'rc2sim_unlock';
 function isSandboxTab(t){ return !!(t && t.sandbox); }
@@ -4512,6 +4509,17 @@ function cbCtx(){
 }
 function updateControlBar(){
   if(!controlBar) return;
+  // The bar is a list of EDITING shortcuts, so it's meaningless (and
+  // actively misleading) on a locked, look-but-don't-touch tab -- it
+  // disappears there and comes straight back on a sandbox tab.
+  if(!canEdit()){
+    if(controlBarSig !== '__locked__'){
+      controlBarSig = '__locked__';
+      controlBar.className = 'hidden';
+      controlBar.innerHTML = '';
+    }
+    return;
+  }
   const c = cbCtx();
   const sig = c.mode+'|'+c.accent+'|'+c.items.map(i=>i[0]+''+i[1]).join('');
   if(sig === controlBarSig) return; // nothing changed -- skip the DOM work
@@ -4792,7 +4800,9 @@ async function writeTabToFolder(tab, json){
 function sanitizeFileName(s){ return (s||'circuit').replace(/[\\/:*?"<>|]/g,'_').trim() || 'circuit'; }
 
 function newTab(name, data){
-  const t = {id:uid(), name: name||('Circuit '+(tabs.length+1)), isFunction:false};
+  // publish:true by default -- a new circuit is included in the public build
+  // unless you explicitly exclude it, so nothing silently goes missing.
+  const t = {id:uid(), name: name||('Circuit '+(tabs.length+1)), isFunction:false, publish:true};
   tabs.push(t);
   if(data) localStorage.setItem(tabKey(t.id), data);
   return t;
@@ -4882,6 +4892,9 @@ function switchTab(id){
   saveTabsIndex();
   renderCircuitTabs();
   renderPalette(paletteSearch.value);
+  // Chrome is per-tab now: moving between a locked circuit and your own
+  // sandbox has to show/hide the palette and shortcut bar accordingly.
+  applyModeChrome();
 }
 function addTabAndSwitch(){
   saveActiveTab();
@@ -4919,6 +4932,7 @@ function renderCircuitTabs(){
   const el = document.getElementById('circuitTabs');
   el.innerHTML='';
   for(const t of tabs){
+    if(t.hiddenTab) continue; // dependency-only Function tab: present, but not shown
     const chip = document.createElement('div'); chip.className='circuitTab'+(t.id===activeTabId?' active':'');
     // In play mode a published tab is a plain, non-editable label: no
     // Function toggle, no close button, no inline rename.
@@ -4929,7 +4943,17 @@ function renderCircuitTabs(){
       el.appendChild(chip);
       continue;
     }
-    chip.innerHTML = `<span class="fnToggle${t.isFunction?' on':''}" title="${t.isFunction?'This tab is a Function -- click to make it a normal tab again':'Make this tab a Function (reusable node group, placeable in other tabs)'}">ƒ</span><span class="nm">${t.name}</span>`+(tabs.length>1?`<span class="x" title="Close tab">✕</span>`:'');
+    const pubOn = t.publish !== false;
+    chip.innerHTML = `<span class="pubToggle${pubOn?' on':''}" title="${pubOn?'Included in the published site — click to leave it out':'Left out of the published site — click to include it'}">⬆</span>`
+      + `<span class="fnToggle${t.isFunction?' on':''}" title="${t.isFunction?'This tab is a Function -- click to make it a normal tab again':'Make this tab a Function (reusable node group, placeable in other tabs)'}">ƒ</span><span class="nm">${t.name}</span>`+(tabs.length>1?`<span class="x" title="Close tab">✕</span>`:'');
+    const pubEl = chip.querySelector('.pubToggle');
+    pubEl.onclick = (ev)=>{
+      ev.stopPropagation();
+      t.publish = !pubOn;
+      saveTabsIndex();
+      renderCircuitTabs();
+      toast(t.publish ? `“${t.name}” will be included when you publish` : `“${t.name}” will be left out of the published site`, t.publish?'good':'warn');
+    };
     const fnEl = chip.querySelector('.fnToggle');
     fnEl.onclick = async (ev)=>{
       ev.stopPropagation();
@@ -5027,13 +5051,14 @@ function loadTabsIndex(){
   // of being shadowed by a stale local copy. Their own sandbox tabs (if
   // they made any) are loaded alongside and stay theirs.
   if(PUBLISH.locked && PUBLISH.tabs && PUBLISH.tabs.length){
-    tabs = PUBLISH.tabs.map((pt,i)=>({ id:'pub'+i, name:pt.name, isFunction:!!pt.isFunction, published:true }));
-    for(const pt of PUBLISH.tabs){ /* data injected below via tabKey */ }
+    tabs = PUBLISH.tabs.map((pt,i)=>({ id:'pub'+i, name:pt.name, isFunction:!!pt.isFunction, published:true, hiddenTab:!!pt.hidden }));
     PUBLISH.tabs.forEach((pt,i)=> PUBLISHED_DATA['pub'+i] = pt.data);
     let sandboxes = [];
     try{ sandboxes = JSON.parse(localStorage.getItem('rc2sim_sandbox_tabs')||'[]'); }catch(e){ sandboxes=[]; }
     tabs = tabs.concat(sandboxes.map(s=>Object.assign({}, s, {sandbox:true})));
-    activeTabId = tabs[0].id;
+    // Open on the first circuit the visitor is actually meant to see, not on
+    // a hidden Function tab that only exists to satisfy a dependency.
+    activeTabId = (tabs.find(t=>!t.hiddenTab) || tabs[0]).id;
     for(const t of tabs) if(t.isFunction===undefined) t.isFunction=false;
     rebuildFunctionComponents();
     const d = loadTabData(activeTabId);
@@ -5051,6 +5076,7 @@ function loadTabsIndex(){
   }
   if(!tabs.some(t=>t.id===activeTabId)) activeTabId = tabs[0].id;
   for(const t of tabs) if(t.isFunction===undefined) t.isFunction=false; // migrate pre-Function-tab saves
+  for(const t of tabs) if(t.publish===undefined) t.publish=true;        // migrate pre-publish-flag saves
   rebuildFunctionComponents(); // must run before deserialize() or placed Function Instance nodes get silently dropped
   const saved = localStorage.getItem(tabKey(activeTabId));
   if(saved){ try{ deserialize(saved); }catch(e){} }
@@ -5060,24 +5086,35 @@ setInterval(()=>{ if(state.nodes.length) saveActiveTab(); }, 8000);
 
 /* -------------------- Mode chrome + Publish generator ---------------------*/
 function applyModeChrome(){
-  const editing = APP_MODE === 'edit';
-  // Editing-only chrome disappears entirely for visitors rather than being
-  // shown greyed out -- a locked build should look like a finished site,
-  // not a disabled editor.
-  for(const id of ['btnAdd','btnGroup','btnSave','btnLoad','btnClear','btnPublish']){
+  // Deliberately per-TAB (canEdit), not per-app: on a published site a
+  // visitor sitting on a locked circuit sees a clean, finished page, but
+  // the moment they switch to their own sandbox the whole editor comes
+  // back -- component palette, shortcut bar, the lot. Re-run on every tab
+  // switch (see switchTab) so it tracks which tab you're actually on.
+  const editing = canEdit();
+  // Editing-only chrome disappears entirely rather than being shown greyed
+  // out -- a locked build should look like a finished site, not a disabled
+  // editor.
+  for(const id of ['btnAdd','btnGroup','btnSave','btnLoad','btnClear']){
     const b = document.getElementById(id); if(b) b.classList.toggle('hidden', !editing);
   }
+  // Publish belongs to the author only; the sandbox offer only to visitors.
+  const pub = document.getElementById('btnPublish');
+  if(pub) pub.classList.toggle('hidden', APP_MODE !== 'edit');
   const sbx = document.getElementById('btnSandbox');
-  if(sbx) sbx.classList.toggle('hidden', editing);
+  if(sbx) sbx.classList.toggle('hidden', APP_MODE !== 'play');
   const pal = document.getElementById('palette');
   const palToggle = document.getElementById('toggleLeft');
   if(pal) pal.classList.toggle('hidden', !editing);
   if(palToggle) palToggle.classList.toggle('hidden', !editing);
   const pill = document.getElementById('modePill');
   if(pill){
-    pill.classList.toggle('hidden', editing);
-    pill.textContent = 'View only';
-    pill.title = 'You can trigger inputs and run the simulation, but not change the circuits.';
+    const sandbox = isSandboxTab(activeTab());
+    pill.classList.toggle('hidden', APP_MODE === 'edit');
+    pill.textContent = sandbox ? 'Your sandbox' : 'View only';
+    pill.title = sandbox
+      ? 'This tab is yours — build whatever you like. It saves only in your own browser.'
+      : 'You can trigger inputs and run the simulation, but not change the circuits.';
   }
 }
 // Serializing the LIVE document would bake in whatever happened to be on
@@ -5114,9 +5151,53 @@ async function publishBuild(){
   if(key===null) return;
   const secret = String(key).trim();
   saveActiveTab();
-  const payload = tabs.filter(t=>!isSandboxTab(t)).map(t=>({
-    name: t.name, isFunction: !!t.isFunction, data: loadTabData(t.id) || serialize()
+
+  // Only the tabs you actually marked for publishing (the ⬆ chip).
+  const wanted = tabs.filter(t=>!isSandboxTab(t) && t.publish !== false);
+  if(!wanted.length){
+    uiAlert('Nothing marked for publishing',
+      'Every tab is currently excluded. Click the ⬆ chip on at least one tab to include it in the public site.',
+      {tone:'warn'});
+    return;
+  }
+
+  // A published circuit that places a Function Instance needs that Function's
+  // OWN tab present too, or the component definition simply won't exist in
+  // the public build and those nodes are silently dropped. Walk the
+  // dependency graph (a Function can itself use another Function) and pull in
+  // whatever is required, marking the extras as hidden so they don't clutter
+  // the visitor's tab strip -- they're machinery, not showcase circuits.
+  const byId = new Map(tabs.map(t=>[t.id, t]));
+  const included = new Map(wanted.map(t=>[t.id, t]));
+  const pulledIn = [];
+  for(let guard=0; guard<50; guard++){
+    let grew = false;
+    for(const t of Array.from(included.values())){
+      const data = loadTabData(t.id) || '';
+      const deps = new Set((String(data).match(/"type":"func::[^"]+"/g) || [])
+        .map(s=>s.slice('"type":"func::'.length, -1)));
+      for(const depId of deps){
+        if(included.has(depId)) continue;
+        const dep = byId.get(depId);
+        if(!dep) continue;
+        included.set(depId, dep);
+        pulledIn.push(dep.name);
+        grew = true;
+      }
+    }
+    if(!grew) break;
+  }
+
+  const payload = tabs.filter(t=>included.has(t.id)).map(t=>({
+    name: t.name, isFunction: !!t.isFunction,
+    // A tab only present to satisfy a Function dependency stays out of the
+    // visitor's tab strip.
+    hidden: t.publish === false,
+    data: loadTabData(t.id) || serialize()
   }));
+  if(pulledIn.length){
+    toast('Also included (needed by a published circuit): '+pulledIn.join(', '), 'info', 4800);
+  }
   const src = capturePristineHtml();
   const replaced = src.replace(
     /const PUBLISH = \{[\s\S]*?\n\};/,
@@ -5189,5 +5270,6 @@ function loop(now){
 }
 requestAnimationFrame(loop);
 </script>
-</body>
-</html>
+
+
+</body></html>
